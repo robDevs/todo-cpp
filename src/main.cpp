@@ -8,10 +8,15 @@
 #include <stdlib.h>
 #include <vector>
 
+// make text with strikethrough codes embedded or something like that. Pretty cool looking.
 std::string strikethrough(const std::string& text) { //https://stackoverflow.com/a/33154446
   std::string result;
+  int count = 0;
   for (auto ch : text) {
-    result.append(u8"\u0336");
+    if(count > 0) {
+      result.append(u8"\u0336");
+    }
+    count += 1;
     result.push_back(ch);
   }
   return result;
@@ -34,7 +39,16 @@ void printItems() {
     std::string item;
     int count = 0;
     while(std::getline(itemsFile, item)) {
-      std::cout << count << ": " << item << std::endl;
+      bool done = false; // if the item has been completed or not. 
+      if (item[0] == 'd') { // d at beginnning denotes it has been done.
+        done = true;
+      }
+      item.erase(0,1); // erase the first char as it's just an internal marker for done or not done.
+      if(!done) {
+        std::cout << count << ": " << item << std::endl;
+      } else {
+        std::cout << count << ": " << strikethrough(item) << std::endl;
+      }
       count += 1;
     }
   }
@@ -47,12 +61,14 @@ void showHelp() {
 }
 
 void addItem(int argc, char *argv[]) {
-  // read all the items to a vector.
+  // just open file in append mode.
+  // then add the data to the file
+  // n used before data to denote (n)ot done
   std::fstream itemsFile;
   itemsFile.open(getFilePath(), std::ios::app);
   if(itemsFile.is_open()) {
     for(int i = 2; i < argc; i++) {
-      itemsFile << argv[i] << std::endl;
+      itemsFile << "n" << argv[i] << std::endl;
     }
   }
   itemsFile.close();
